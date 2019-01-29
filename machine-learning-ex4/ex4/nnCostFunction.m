@@ -62,18 +62,39 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
-z2 = [ones(m,1) X]*Theta1';
+%Feedforward or Forward Propagation
+a1 = [ones(m,1) X];
+z2 = a1*Theta1';
 a2 = sigmoid(z2);
-z3 = [ones(m,1) a2]*Theta2';
+a2 = [ones(m,1) a2];
+z3 = a2*Theta2';
 h = sigmoid(z3);
 
+%One hot coding i.e., converting the labels to binary vectors
 y_h = logical(accumarray([(1:numel(y)).' y], 1));
 
-J = -(1/m)*(sum(sum(y_h.*log(h)+(1-y_h).*log(1-h)))) + (lambda/(2*m))*sum();
+%For removing the bias columns for the calculation of reg term
+Theta11 = Theta1;
+Theta22 = Theta2;
+Theta11(:,1) = 0;
+Theta22(:,1) = 0;
 
-% for i = 1:m
-% 
-% end
+%Neural network Cost with regularisation 
+J = -(1/m)*(sum(sum(y_h.*log(h)+(1-y_h).*log(1-h)))) + (lambda/(2*m))*(sum(sum(Theta11.^2))+sum(sum(Theta22.^2)));
+
+%Calculating Del operator
+delL = h - y;
+del1 = (delL*Theta2 .* sigmoidGradient([ones(size(z2,1), 1) z2]));
+del1 = del1(:, 2:end);
+
+%Calculating /\ operator 
+delta2 =  delL'*a2;
+delta1 =  del1'*a1;
+
+%Calculating D operator which are derivatives of Cost function
+Theta1_grad = (1/m)*delta1 + (lambda)*[zeros(size(Theta1,1), 1) Theta1(:, 2:end)];
+Theta2_grad = (1/m)*delta2 + (lambda)*[zeros(size(Theta2,1), 1) Theta2(:, 2:end)];
+
 % -------------------------------------------------------------
 
 % =========================================================================
