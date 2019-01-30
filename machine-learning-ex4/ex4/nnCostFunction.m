@@ -84,17 +84,22 @@ J = -(1/m)*(sum(sum(y_h.*log(h)+(1-y_h).*log(1-h)))) + (lambda/(2*m))*(sum(sum(T
 
 % Backpropagation
 
-for i=1:m
-    a11 = [1 X(i,:)];
-    z22 = a11*Theta1';
-    a22 = [1 sigmoid(z22)];
-    z33 = a22*Theta2';
-    hh = sigmoid(z33);
-    
-    delta2 = hh - y(i,:); 
-    delta1 = delta2*Theta2' .* sigmoidGradient([1 z22]);
-    
-end
+% BACK PROPOGATION
+d3 = h - y_h;                                             
+d2 = (d3*Theta2).*[ones(size(z2,1),1) sigmoidGradient(z2)];  
+
+D1 = d2(:,2:end)' * a1;    
+D2 = d3' * a2;    
+
+Theta1_grad = (1/m) * D1;
+Theta2_grad = (1/m) * D2;
+
+% REGULARIZATION OF THE GRADIENT
+
+Theta1_grad(:,2:end) = Theta1_grad(:,2:end) + (lambda/m)*(Theta1(:,2:end));
+Theta2_grad(:,2:end) = Theta2_grad(:,2:end) + (lambda/m)*(Theta2(:,2:end));
+
+grad = [Theta1_grad(:) ; Theta2_grad(:)];
 
 % -------------------------------------------------------------
 
